@@ -8,6 +8,7 @@ pygame_running = False
 screen = None
 clock = None
 font = None
+font_small = None
 
 # Display Colours
 DARK_GREY = (123, 125, 123)
@@ -18,15 +19,21 @@ SKY_AZURE = (172, 234, 255)
 #ICON_GREY = (90, 76, 49)
 SERAPH = (9*7, 1*7, 4*7)
 CALM_AZURE = (70, 150, 153)
+CHILL_GREY = (102, 153, 153)
+LINE_MAKE = (102, 153, 153)
 
 
 node_list = []
-active_node = None
+bond_list = []
+draggable_node = None
+build_line = False
+initial_corner = None
+terminate_corner = None
 
 def create_node():
     global nodes
-    node_list.append(nodes.Node(20, 20, SERAPH, "Test"))
-    node_list.append(nodes.Node(80, 80, SERAPH, "Test"))
+    node_list.append(nodes.Node(20, 20, SERAPH, "Test 1"))
+    node_list.append(nodes.Node(80, 80, SERAPH, "Test 1"))
 
 
 def draw_nodes():
@@ -35,29 +42,74 @@ def draw_nodes():
     for node in node_list:
         #pygame.draw.rect(screen, node.colour, (node.x, node.y, node.width, node.height))
         pygame.draw.rect(screen, node.colour, node.box)
-        text_surface = font.render(node.text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect()
-        text_rect.center = (
+        label_text = font.render(node.text, True, (255, 255, 255))
+        label_rect = label_text.get_rect()
+        label_rect.center = (
                                 node.x + (node.width / 2),
-                                node.y + (node.height / 2)
+                                node.y + ((node.height / 5) * 2)
                             )
-        screen.blit(text_surface, text_rect)
+        screen.blit(label_text, label_rect)
+
+        id_text = font_small.render(node.id, True, (255, 255, 255))
+        id_rect = id_text.get_rect()
+        id_rect.center = (
+            node.x + (node.width / 2),
+            node.y + ((node.height / 5) * 4)
+        )
+        screen.blit(id_text, id_rect)
+
+        for corner in node.corners:
+            pygame.draw.circle(screen, DARK_AZURE, corner, 5)
 
 
 def init_screen(WIDTH, HEIGHT):
-    global clock, font, screen, pygame_running
+    global clock, font, font_small, screen, pygame_running
     pygame.init()
 
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 20)
+    font_small = pygame.font.SysFont(None, 16)
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     pygame.display.set_caption("SeraphNote")
     pygame_running = True
 
 
+def line_builder(original_corner, mouse_x, mouse_y):
+    node = original_corner[0]
+    corner_num = original_corner[1]
+    corner_x = node.corners[corner_num][0]
+    corner_y = node.corners[corner_num][1]
+
+    pygame.draw.line(screen, DARK_GREY, (corner_x, corner_y), (mouse_x, mouse_y), 2)
+
+
+def bond_builder(original_corner, end_corner, mouse_x, mouse_y):
+    global bond_list
+    node_1 = original_corner[0]
+    corner_1_num = original_corner[1]
+    # corner_1_x = node_1.corners[corner_1_num][0]
+    # corner_1_y = node_1.corners[corner_1_num][1]
+
+    node_2 = end_corner[0]
+    corner_2_num = end_corner[1]
+    # corner_2_x = node_2.corners[corner_2_num][0]
+    # corner_2_y = node_2.corners[corner_2_num][1]
+
+    bond = nodes.Bond(node_1, node_2, corner_1_num, corner_2_num)
+    bond_list.append(bond)
+
+
+def draw_bonds():
+    for bond in bond_list:
+        bond.update_position()
+        pygame.draw.line(screen, SKY_AZURE, (bond.x, bond.y), (bond.term_x, bond.term_y), 2)
+
+
+
+
 def screen_loop():
-    global clock, font, screen, pygame_running, active_node
+    global clock, font, screen, pygame_running, draggable_node, build_line, initial_corner, terminate_corner
 
     create_node()
 
@@ -76,29 +128,49 @@ def screen_loop():
 
             # Draw Nodes
             draw_nodes()
+            draw_bonds()
+
+
             # Check mouse
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # left mouse button
                     # check if mouse over box
                     for num, node in enumerate(node_list):
+                        # check if box selected
                         if node.box.collidepoint(event.pos):
-                            active_node = node
+                            draggable_node = node
+                        # check if circle selected
+                        for i, corner in enumerate(node.corners):
+                            # if within radius of the circle
+                            if ((event.pos[0] - corner[0]) ** 2 + (event.pos[1] - corner[1]) ** 2) <= 25:
+                                if build_line == False: # Start making line
+                                    build_line = True
+                                    initial_corner = (node, i)
+                                else: # finish making line
+                                    build_line = False
+                                    terminate_corner = (node, i)
+
 
 
             # move active node
             if event.type == pygame.MOUSEMOTION:
-                if active_node != None:
-                    active_node.set_position(event.pos[0], event.pos[1])
-                    #active_node.box.move_ip(event.rel)
+                if draggable_node != None:
+                    draggable_node.set_position(event.pos[0], event.pos[1])
+                if build_line:
+                    line_builder(initial_corner, event.pos[0], event.pos[1])
+                if terminate_corner:
+                    bond_builder(initial_corner, terminate_corner, event.pos[0], event.pos[1])
+                    initial_corner = None
+                    terminate_corner = None
 
 
             # if mouse up, drop active box
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:  # left mouse button
-                    active_node = None
+                    draggable_node = None
 
 
-            pygame.draw.line(screen, DARK_GREY, (node_list[0].x, node_list[0].y), (node_list[1].x, node_list[1].y), 2)
+            #pygame.draw.line(screen, DARK_GREY, (node_list[0].x, node_list[0].y), (node_list[1].x, node_list[1].y), 2)
 
 
         # Update screen
