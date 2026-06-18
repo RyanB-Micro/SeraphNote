@@ -26,8 +26,6 @@ fact_body_entry = None
 
 main_title_label = None
 
-slogans = ["Connecting Minds to Thoughts", "For God so loved the world, that he gave his one and only Son, so that whoever believes in him should not perish, but get to live an everlasting life - John 3:16"]
-
 
 def start_screen():
     global screen_thread
@@ -346,3 +344,4 @@ screen_thread = threading.Thread(target=screen_loop)
 if __name__ == '__main__':
     main()
 
+# "For God so loved the world, that he gave his one and only Son, so that whoever believes in him should not perish, but get to live an everlasting life - John 3:16"

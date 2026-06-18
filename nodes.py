@@ -3,6 +3,7 @@ import random
 
 node_ids = []
 bond_ids = []
+fact_ids = []
 
 # TODO: add bond slots to nodes
 # TODO: Add bond table to pandas, nodes x nodes and bonds within
@@ -20,6 +21,20 @@ def gen_node_id():
             node_ids.append(node_id)
 
     return node_id
+
+
+def gen_fact_id():
+    global fact_ids
+    fact_id = "F_0"
+    while fact_id == "F_0":
+        id = random.randint(0,255)
+        builder = "F_" + str(id)
+        # make sure it doesnt already exist
+        if builder not in fact_ids:
+            fact_id = builder
+            fact_ids.append(fact_id)
+
+    return fact_id
 
 
 def gen_bond_id():
@@ -112,7 +127,7 @@ class Fact:
         self.height = 150
         self.bonds = []
         self.box = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.id = gen_node_id()
+        self.id = gen_fact_id()
 
         self.corners = [(self.x,self.y), (self.x+self.width,self.y), (self.x, self.y+(self.height/2)),
                         (self.x+self.width, self.y+(self.height/2)), (self.x, self.y+self.height), (self.x+self.width, self.y+self.height)]

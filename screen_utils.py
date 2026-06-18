@@ -10,7 +10,11 @@ FPS = 60
 pygame_running = False
 screen = None
 clock = None
+font_big = None
+font_big_italic = None
 font = None
+font_bold = None
+font_bold_italic = None
 font_small = None
 pygame_version = pygame.version.ver
 
@@ -113,7 +117,7 @@ def draw_facts():
         label_rect = label_text.get_rect()
         label_rect.center = (
                                 fact.x + (fact.width / 2),
-                                fact.y + ((fact.height / 5) * 1)
+                                fact.y + ((fact.height / 7) * 1)
                             )
         screen.blit(label_text, label_rect)
 
@@ -121,7 +125,7 @@ def draw_facts():
         body_rect = body_text.get_rect()
         body_rect.center = (
             fact.x + (fact.width / 2),
-            fact.y + ((fact.height / 5) * 2)
+            fact.y + ((fact.height / 7) * 2)
         )
         screen.blit(body_text, body_rect)
 
@@ -130,7 +134,7 @@ def draw_facts():
         id_rect = id_text.get_rect()
         id_rect.center = (
             fact.x + (fact.width / 2),
-            fact.y + ((fact.height / 5) * 4)
+            fact.y + ((fact.height / 7) * 6)
         )
         screen.blit(id_text, id_rect)
 
@@ -193,13 +197,17 @@ def draw_bonds():
 
 
 def init_screen(WIDTH, HEIGHT):
-    global clock, font, font_small, screen, pygame_running, pygame_version
+    global clock, font_big, font, font_small, screen, pygame_running, pygame_version, font_bold_italic, font_big_italic, font_bold
     pygame.init()
 
     pygame_version = pygame.version.ver
 
     clock = pygame.time.Clock()
+    font_big_italic = pygame.font.SysFont(None, 50, italic=True)
+    font_big = pygame.font.SysFont(None, 50)
     font = pygame.font.SysFont(None, 20)
+    font_bold = pygame.font.SysFont(None, 20, bold=True)
+    font_bold_italic = pygame.font.SysFont(None, 20, italic=True, bold=True)
     font_small = pygame.font.SysFont(None, 16)
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -254,7 +262,14 @@ def create_toolstrip():
 
 
 def draw_toolstrip():
-    pygame.draw.rect(screen, VISION_AZURE, (0, HEIGHT - tool_strip_width - 10, WIDTH, HEIGHT))
+    tool_strip_colour = SKY_AZURE#COOL_AZURE
+    if selected_tool == 0:
+        tool_strip_colour = SERAPH
+    if selected_tool == 1:
+        tool_strip_colour = VISION_AZURE
+    pygame.draw.rect(screen, tool_strip_colour, (0, HEIGHT - tool_strip_width - 10, WIDTH, HEIGHT))
+
+
     tool_strip_box = pygame.Rect(0, HEIGHT - tool_strip_width, WIDTH, HEIGHT)
     pygame.draw.rect(screen, DARK_GREY, tool_strip_box)
 
@@ -269,6 +284,18 @@ def draw_toolstrip():
             ((HEIGHT - tool_strip_width) + (tool_height / 2))
         )
         screen.blit(label_text, label_rect)
+
+
+    # Draw window text
+    main_text = font_big_italic.render("SeraphNote", True, (255 - 7, 255 - 7, 255 - 7))
+    main_text_rect = main_text.get_rect()
+    main_text_rect.center = (1280, 875)
+    screen.blit(main_text, main_text_rect)
+
+    slogan_text = font_bold.render("Connecting Facts to Thoughts", True, tool_strip_colour)
+    slogan_text_rect = slogan_text.get_rect()
+    slogan_text_rect.center = (1320, 900)
+    screen.blit(slogan_text, slogan_text_rect)
 
 
 def delete_item(item, item_list):
