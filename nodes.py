@@ -99,6 +99,7 @@ class Node:
         self.text = text
 
 
+
 class Fact:
     def __init__(self, x, y, colour, title):
         self.x = x

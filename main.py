@@ -1,7 +1,10 @@
 import pygame
 from tkinter import *
 import threading
+import platform
 import screen_utils as screen_ut
+import pandas_utils as pandas_ut
+
 
 # Window Settings
 #----------------
@@ -103,6 +106,20 @@ def change_bond_text():
     bond_window.withdraw()
 
 
+
+def delete_node():
+    if screen_ut.changeable_node is None:
+        return
+
+    deleting_node = screen_ut.node_list[screen_ut.changeable_node]
+
+    screen_ut.delete_item(deleting_node, screen_ut.node_list)
+    screen_ut.changeable_node = None
+
+    # Hide window
+    node_window.withdraw()
+
+
 def cancel_node_edit():
     screen_ut.changeable_node = None
     node_window.withdraw()
@@ -134,6 +151,18 @@ def create_root_control():
     change_title_button.config(command=lambda: change_title_text())
     change_title_button.place(x=50, y=50)
 
+    # Add version labels
+    python_version = "Python Ver. " + platform.python_version()
+    pygame_version = "PyGame Ver. " + screen_ut.pygame_version
+    pandas_version = "Pandas Ver. " + pandas_ut.pandas_version
+    python_label = Label(root_window, text=python_version)
+    python_label.place(x=40, y=200)
+    pygame_label = Label(root_window, text=pygame_version)
+    pygame_label.place(x=40, y=220)
+    pandas_label = Label(root_window, text=pandas_version)
+    pandas_label.place(x=40, y=240)
+
+
 
 def create_node_control():
     global node_label_entry
@@ -156,11 +185,18 @@ def create_node_control():
     cancel_label_button.place(x=50, y=80)
 
 
+    delete_node_button = Button(node_window, text="Delete Node")
+    delete_node_button.config(command=lambda: delete_node())
+    delete_node_button.place(x=50, y=200)
+
+    title_label = Label(node_window, text="Node Control Panel")
+
+
 def create_fact_control():
     global fact_label_entry, fact_body_entry
     fact_window.geometry("200x300")
     fact_window.protocol("WM_DELETE_WINDOW", cancel_fact_edit)
-    fact_window.title("Node Control")
+    fact_window.title("Fact Control")
 
     title_label = Label(fact_window, text="Fact Control Panel")
     title_label.pack()

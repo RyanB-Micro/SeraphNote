@@ -48,6 +48,9 @@ selected_tool = None
 cursor_colour = VISION_AZURE
 
 
+pygame_version = None
+
+
 tool_strip_width = 64
 tool_width = 100
 tool_height = 50
@@ -192,8 +195,10 @@ def draw_bonds():
 
 
 def init_screen(WIDTH, HEIGHT):
-    global clock, font, font_small, screen, pygame_running
+    global clock, font, font_small, screen, pygame_running, pygame_version
     pygame.init()
+
+    pygame_version = pygame.version.ver
 
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 20)
@@ -266,6 +271,21 @@ def draw_toolstrip():
             ((HEIGHT - tool_strip_width) + (tool_height / 2))
         )
         screen.blit(label_text, label_rect)
+
+
+def delete_item(item, item_list):
+    if item in item_list:
+        item_list.remove(item)
+
+    # search if item connected to any bonds
+    effected_bonds = []
+    for bond in bond_list:
+        if bond.node_1 == item or bond.node_2 == item:
+            effected_bonds.append(bond)
+
+    # remove any effected bonds
+    for bond in effected_bonds:
+        bond_list.remove(bond)
 
 
 
